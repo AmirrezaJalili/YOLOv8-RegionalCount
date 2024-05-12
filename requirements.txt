@@ -1,0 +1,5 @@
+python >= 3.10.14
+ultralutics == 8.2.2
+cv2 == 4.9.0.80
+numpy == 1.26.4
+shapely == 2.0.4
