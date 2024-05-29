@@ -8,32 +8,30 @@ from shapely.geometry import Polygon
 from shapely.geometry.point import Point
 import time
 
+# ---------------------------------------------------------
+source_path = 'SampleVideo3.mp4'   #path to sample video, for webcam : 0, for external webcam : 1
+classes_lst = [0]  #objects to count, 0 : person
+region_points_lst = [(50, 80), (250, 20), (450, 80), (400, 350), (100, 350)]  #points of region
+device = "cpu" # enter 0 to use gpu
+limit_time = 20 #the time limit for webcam (seconds)
+# ---------------------------------------------------------
 
 track_history = defaultdict(list)
 
-counting_regions = [
-    {
-        "name": "YOLOv8 Rectangle Region",
-        "polygon": Polygon([(50, 80), (250, 20), (450, 80), (400, 350), (100, 350)]),
-        "counts": 0,
-        "dragging": False,
-        "region_color": (37, 255, 225),  # BGR Value
-        "text_color": (0, 0, 0),  # Region Text Color
-    },
-]
 
+# fix performance of this function
 def run(
     weights="yolov8n.pt",
-    source="SampleVideo3.mp4",
-    device="cpu",
+    source=source_path,
+    device=device,
     view_img=True,
     save_img=True,
     exist_ok=False,
-    classes=[0],
+    classes=classes_lst,
     line_thickness=2,
     track_thickness=2,
     region_thickness=2,
-    region_points = [(50, 80), (250, 20), (450, 80), (400, 350), (100, 350)]
+    region_points = region_points_lst
 ):
     counting_regions = [
         {
@@ -67,11 +65,10 @@ def run(
     vid_frame_count = 0
 
     # Check source path
-    if not Path(source).exists():
-        raise FileNotFoundError(f"Source path '{source}' does not exist.")
-# ----------------------------------------------------------------------------------------------
-# ----------------------------------------------------------------------------------------------
-# ----------------------------------------------------------------------------------------------
+    if not source in [0, 1]:
+        if not Path(source).exists():
+            raise FileNotFoundError(f"Source path '{source}' does not exist.")
+
 
     # Setup Model
     model = YOLO("yolov8n.pt")
@@ -88,10 +85,20 @@ def run(
     # Output setup
     #save_dir = increment_path(Path("ultralytics_rc_output") / "exp", exist_ok)
     #save_dir.mkdir(parents=True, exist_ok=True)
-    video_writer = cv2.VideoWriter('output3.avi', fourcc, fps, (frame_width, frame_height))
+    video_writer = cv2.VideoWriter('output.avi', fourcc, fps, (frame_width, frame_height))
     s_time = time.time()
     # Iterate over video frames
-    while videocapture.isOpened() :#and time.time() - s_time<10:
+    
+    # check the limit time for webcam
+    if source in [0, 1]:
+        if time.time() - s_time() < limit_time:
+            limit_ok = True
+        else:
+            limit_ok = False
+    else:
+        limit_ok = True
+        
+    while videocapture.isOpened() and limit_ok:
         success, frame = videocapture.read()
         if not success:
             break
@@ -168,7 +175,6 @@ def run(
     video_writer.release()
     videocapture.release()
     cv2.destroyAllWindows()
-
     
 run() 
     
