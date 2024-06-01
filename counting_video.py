@@ -91,7 +91,7 @@ def run(
     
     # check the limit time for webcam
     if source in [0, 1]:
-        if time.time() - s_time() < limit_time:
+        if time.time() - s_time < limit_time:
             limit_ok = True
         else:
             limit_ok = False
