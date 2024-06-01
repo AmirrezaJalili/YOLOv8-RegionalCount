@@ -89,16 +89,16 @@ def run(
     s_time = time.time()
     # Iterate over video frames
     
-    # check the limit time for webcam
-    if source in [0, 1]:
-        if time.time() - s_time < limit_time:
-            limit_ok = True
-        else:
-            limit_ok = False
-    else:
-        limit_ok = True
-        
+    limit_ok = True
     while videocapture.isOpened() and limit_ok:
+        # check the limit time for webcam
+        if source in [0, 1]:
+            if time.time() - s_time < limit_time:
+                limit_ok = True
+            else:
+                limit_ok = False
+        else:
+            limit_ok = True
         success, frame = videocapture.read()
         if not success:
             break
